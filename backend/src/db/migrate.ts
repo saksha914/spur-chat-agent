@@ -1,39 +1,32 @@
-import { pool } from './pool';
+import { getDb } from './pool';
 
 const migrate = async () => {
+  const db = await getDb();
+  console.log('Running database migrations...');
+
   try {
-    console.log('Running database migrations...');
-
-    await pool.query(`
+    // Create conversations table
+    await db.exec(`
       CREATE TABLE IF NOT EXISTS conversations (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        metadata JSONB
+        id TEXT PRIMARY KEY,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        metadata TEXT DEFAULT '{}'
       );
     `);
 
-    await pool.query(`
+    // Create messages table
+    await db.exec(`
       CREATE TABLE IF NOT EXISTS messages (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-        sender VARCHAR(10) NOT NULL CHECK (sender IN ('user', 'ai')),
+        id TEXT PRIMARY KEY,
+        conversation_id TEXT NOT NULL,
+        sender TEXT NOT NULL CHECK (sender IN ('user', 'ai')),
         text TEXT NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
       );
-    `);
-
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS idx_messages_conversation_id 
-      ON messages(conversation_id);
-    `);
-
-    await pool.query(`
-      CREATE INDEX IF NOT EXISTS idx_messages_created_at 
-      ON messages(created_at);
     `);
 
     console.log('Migrations completed successfully');
-    process.exit(0);
   } catch (error) {
     console.error('Migration failed:', error);
     process.exit(1);

@@ -1,29 +1,26 @@
-import { pool } from './pool';
+import { getDb } from './pool';
+import { createConversation, saveMessage } from './queries';
 
 const seed = async () => {
+  const db = await getDb();
+  console.log('Seeding database...');
+
   try {
-    console.log('Seeding database with sample data...');
+    // Clear existing data (optional, but good for idempotent seed)
+    await db.exec('DELETE FROM messages');
+    await db.exec('DELETE FROM conversations');
 
-    const result = await pool.query(`
-      INSERT INTO conversations (metadata) 
-      VALUES ($1) 
-      RETURNING id
-    `, [{ type: 'demo', seeded: true }]);
+    // Create a sample conversation
+    const conversationId = await createConversation({ source: 'seed' });
+    console.log(`Created conversation: ${conversationId}`);
 
-    const conversationId = result.rows[0].id;
+    // Add some messages
+    await saveMessage(conversationId, 'user', 'Hello, do you ship to Canada?');
+    await saveMessage(conversationId, 'ai', 'Yes, we ship internationally including Canada. It typically takes 7-14 business days.');
+    await saveMessage(conversationId, 'user', 'How much does it cost?');
+    await saveMessage(conversationId, 'ai', 'International shipping costs vary by destination, but we have a standard rate of $15 for most countries.');
 
-    await pool.query(`
-      INSERT INTO messages (conversation_id, sender, text) 
-      VALUES 
-        ($1, 'user', 'What is your return policy?'),
-        ($1, 'ai', 'Our return policy allows you to return items within 30 days of purchase. Items must be in their original condition with tags attached. Once we receive your return, we''ll process your refund within 5-7 business days.'),
-        ($1, 'user', 'Do you ship internationally?'),
-        ($1, 'ai', 'Yes, we ship to most countries worldwide! International shipping typically takes 7-14 business days. Shipping costs vary by destination and will be calculated at checkout.')
-    `, [conversationId]);
-
-    console.log('Database seeded successfully');
-    console.log(`Sample conversation ID: ${conversationId}`);
-    process.exit(0);
+    console.log('Seeding completed successfully');
   } catch (error) {
     console.error('Seeding failed:', error);
     process.exit(1);

@@ -1,6 +1,6 @@
 export const OPENAI_MODEL = 'gpt-3.5-turbo';
 export const ANTHROPIC_MODEL = 'claude-3-haiku-20240307';
-export const GEMMA_MODEL = 'gemini-1.5-flash';
+export const GEMMA_MODEL = 'models/gemma-3-27b-it';
 
 export const STORE_KNOWLEDGE = `
 You are a helpful support agent for SpurStore, a small e-commerce store. Here's what you need to know:

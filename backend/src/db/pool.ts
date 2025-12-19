@@ -1,15 +1,21 @@
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
+import sqlite3 from 'sqlite3';
+import { open, Database } from 'sqlite';
+import path from 'path';
 
-dotenv.config();
+let dbInstance: Database | null = null;
 
-export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+export const getDb = async () => {
+  if (dbInstance) {
+    return dbInstance;
+  }
 
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle database client', err);
-});
+  const dbPath = path.resolve(__dirname, '../../chat.db');
+  console.log(`opening sqlite db at ${dbPath}`);
+
+  dbInstance = await open({
+    filename: dbPath,
+    driver: sqlite3.Database
+  });
+
+  return dbInstance;
+};

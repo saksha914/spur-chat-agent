@@ -47,12 +47,10 @@ If you don't know something specific, acknowledge that and offer to connect them
 
 1.  Navigate to the `backend` folder.
 2.  Create a `.env` file (you can copy `.env.example`).
-3.  Add your database URL and at least one AI API key.
+3.  Add at least one AI API key.
 
 **Recommended (Free): Google Gemma**
 ```bash
-DATABASE_URL=postgresql://postgres:password@localhost:5432/spur_chat
-
 # Priority: LLM_PROVIDER > Gemma > OpenAI > Anthropic
 LLM_PROVIDER=gemma
 GEMMA_API_KEY=your_google_aistudio_key
@@ -70,7 +68,8 @@ OPENAI_API_KEY=your_openai_key
 ```bash
 cd backend
 npm install
-npm run db:migrate  # Run database migrations
+# Database is auto-configured (SQLite)
+npm run db:migrate  # Initialize chat.db
 npm run dev         # Start server on http://localhost:3000
 ```
 

@@ -1,26 +1,34 @@
-import { pool } from './pool';
+import { getDb } from './pool';
+import { v4 as uuidv4 } from 'uuid';
 import { Message, Conversation } from '../types';
 
 export const createConversation = async (metadata?: Record<string, any>): Promise<string> => {
-  const result = await pool.query(
-    'INSERT INTO conversations (metadata) VALUES ($1) RETURNING id',
-    [metadata || {}]
+  const db = await getDb();
+  const id = uuidv4();
+  // SQLite doesn't natively support storing objects/arrays, so we stringify
+  const metadataStr = JSON.stringify(metadata || {});
+
+  await db.run(
+    'INSERT INTO conversations (id, metadata) VALUES (?, ?)',
+    [id, metadataStr]
   );
-  return result.rows[0].id;
+
+  return id;
 };
 
 export const getConversation = async (id: string): Promise<Conversation | null> => {
-  const result = await pool.query(
-    'SELECT * FROM conversations WHERE id = $1',
+  const db = await getDb();
+  const row = await db.get(
+    'SELECT * FROM conversations WHERE id = ?',
     [id]
   );
-  
-  if (result.rows.length === 0) return null;
-  
+
+  if (!row) return null;
+
   return {
-    id: result.rows[0].id,
-    createdAt: result.rows[0].created_at,
-    metadata: result.rows[0].metadata
+    id: row.id.toString(),
+    createdAt: row.created_at,
+    metadata: row.metadata ? JSON.parse(row.metadata) : {}
   };
 };
 
@@ -29,19 +37,23 @@ export const saveMessage = async (
   sender: 'user' | 'ai',
   text: string
 ): Promise<Message> => {
-  const result = await pool.query(
-    `INSERT INTO messages (conversation_id, sender, text) 
-     VALUES ($1, $2, $3) 
-     RETURNING *`,
-    [conversationId, sender, text]
+  const db = await getDb();
+  const id = uuidv4();
+
+  await db.run(
+    `INSERT INTO messages (id, conversation_id, sender, text) 
+     VALUES (?, ?, ?, ?)`,
+    [id, conversationId, sender, text]
   );
-  
+
+  const row = await db.get('SELECT * FROM messages WHERE id = ?', [id]);
+
   return {
-    id: result.rows[0].id,
-    conversationId: result.rows[0].conversation_id,
-    sender: result.rows[0].sender,
-    text: result.rows[0].text,
-    createdAt: result.rows[0].created_at
+    id: row.id.toString(),
+    conversationId: row.conversation_id.toString(),
+    sender: row.sender,
+    text: row.text,
+    createdAt: row.created_at
   };
 };
 
@@ -49,17 +61,18 @@ export const getConversationMessages = async (
   conversationId: string,
   limit: number = 50
 ): Promise<Message[]> => {
-  const result = await pool.query(
+  const db = await getDb();
+  const rows = await db.all(
     `SELECT * FROM messages 
-     WHERE conversation_id = $1 
+     WHERE conversation_id = ? 
      ORDER BY created_at ASC 
-     LIMIT $2`,
+     LIMIT ?`,
     [conversationId, limit]
   );
-  
-  return result.rows.map(row => ({
-    id: row.id,
-    conversationId: row.conversation_id,
+
+  return rows.map(row => ({
+    id: row.id.toString(),
+    conversationId: row.conversation_id.toString(),
     sender: row.sender,
     text: row.text,
     createdAt: row.created_at
