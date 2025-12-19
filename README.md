@@ -4,7 +4,7 @@
 This project implements a full-stack AI chat agent using a **React** (Vite + TypeScript) frontend and a **Node.js** (Express + TypeScript) backend.
 
 -   **Frontend**: Handles real-time user interaction, state management, and optimistic UI updates. It maintains a consistent chat history using persistent sessions.
--   **Backend**: Manages API endpoints (`/api/chat/message`, `/api/chat/history`), validates inputs with Zod, and persists conversations in **PostgreSQL**.
+-   **Backend**: Manages API endpoints (`/api/chat/message`, `/api/chat/history`), validates inputs, and persists conversations in **SQLLite**.
 -   **AI Integration**: Features a provider-agnostic `LLMService` that supports **Google Gemma**, **OpenAI**, and **Anthropic**. It automatically selects the best available provider based on your environment keys, with fallback logic for rate limits and errors. The system uses a persistent "Store Knowledge" system prompt to maintain persona and context.
 
 ## 2. Prompt Used
