@@ -1,10 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { Message } from '../../types';
 import { ILLMProvider } from './types';
+import { ANTHROPIC_MODEL, PROVIDERS } from '../../constants';
 import { AppError } from '../../middleware/errorHandler';
 
 export class AnthropicProvider implements ILLMProvider {
-    public name = 'anthropic';
+    public name = PROVIDERS.ANTHROPIC;
     private client: Anthropic;
 
     constructor(apiKey: string) {
@@ -15,15 +16,15 @@ export class AnthropicProvider implements ILLMProvider {
         try {
             const conversationHistory = messages
                 .slice(-10)
-                .map(m => `${m.sender === 'user' ? 'Customer' : 'Agent'}: ${m.text}`)
+                .map(m => `${m.sender === 'user' ? 'Customer' : 'Agent'}: ${m.text} `)
                 .join('\n');
 
             const prompt = conversationHistory
-                ? `Recent conversation:\n${conversationHistory}\n\nCustomer: ${userMessage}`
-                : `Customer: ${userMessage}`;
+                ? `Recent conversation: \n${conversationHistory} \n\nCustomer: ${userMessage} `
+                : `Customer: ${userMessage} `;
 
             const response = await this.client.messages.create({
-                model: 'claude-3-haiku-20240307',
+                model: ANTHROPIC_MODEL,
                 max_tokens: 500,
                 temperature: 0.7,
                 system: systemPrompt,

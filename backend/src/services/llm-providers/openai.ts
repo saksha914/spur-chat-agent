@@ -1,10 +1,11 @@
 import OpenAI from 'openai';
 import { Message } from '../../types';
 import { ILLMProvider } from './types';
+import { OPENAI_MODEL, PROVIDERS } from '../../constants';
 import { AppError } from '../../middleware/errorHandler';
 
 export class OpenAIProvider implements ILLMProvider {
-    public name = 'openai';
+    public name = PROVIDERS.OPENAI;
     private client: OpenAI;
 
     constructor(apiKey: string) {
@@ -23,7 +24,7 @@ export class OpenAIProvider implements ILLMProvider {
             ];
 
             const response = await this.client.chat.completions.create({
-                model: 'gpt-3.5-turbo',
+                model: OPENAI_MODEL,
                 messages: formattedMessages,
                 max_tokens: 500,
                 temperature: 0.7,

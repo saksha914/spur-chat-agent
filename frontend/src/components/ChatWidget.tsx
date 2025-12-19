@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageBubble } from './MessageBubble';
 import { sendMessage, getHistory } from '../api';
 import type { Message } from '../types';
+import { UI_TEXT, STORAGE_KEYS, SUGGESTIONS } from '../constants';
 import './ChatWidget.css';
 
 export const ChatWidget: React.FC = () => {
@@ -21,7 +22,7 @@ export const ChatWidget: React.FC = () => {
     };
 
     useEffect(() => {
-        const storedSessionId = localStorage.getItem('chatSessionId');
+        const storedSessionId = localStorage.getItem(STORAGE_KEYS.SESSION_ID);
         if (storedSessionId) {
             loadHistory(storedSessionId);
         }
@@ -75,7 +76,7 @@ export const ChatWidget: React.FC = () => {
 
             setMessages(prev => [...prev, aiMessage]);
             setSessionId(response.sessionId);
-            localStorage.setItem('chatSessionId', response.sessionId);
+            localStorage.setItem(STORAGE_KEYS.SESSION_ID, response.sessionId);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to send message');
             setMessages(prev => prev.slice(0, -1)); // Remove failed message
@@ -96,7 +97,7 @@ export const ChatWidget: React.FC = () => {
         setMessages([]);
         setSessionId(null);
         setError(null);
-        localStorage.removeItem('chatSessionId');
+        localStorage.removeItem(STORAGE_KEYS.SESSION_ID);
     };
 
     const handleSuggestion = (text: string) => {
@@ -106,27 +107,23 @@ export const ChatWidget: React.FC = () => {
     return (
         <div className="chat-widget">
             <div className="header">
-                <h3>SpurStore Support</h3>
-                <button className="clear-btn" onClick={clearChat} title="Clear chat">
-                    New Chat
+                <h3>{UI_TEXT.HEADER_TITLE}</h3>
+                <button className="clear-btn" onClick={clearChat} title={UI_TEXT.CLEAR_CHAT_TOOLTIP}>
+                    {UI_TEXT.NEW_CHAT_BUTTON}
                 </button>
             </div>
 
             <div className="messages">
                 {messages.length === 0 && (
                     <div className="welcome">
-                        <h4>Welcome to SpurStore Support!</h4>
-                        <p>How can I help you today?</p>
+                        <h4>{UI_TEXT.WELCOME_TITLE}</h4>
+                        <p>{UI_TEXT.WELCOME_SUBTITLE}</p>
                         <div className="suggestions">
-                            <button onClick={() => handleSuggestion("What's your return policy?")}>
-                                Return policy?
-                            </button>
-                            <button onClick={() => handleSuggestion("Do you ship internationally?")}>
-                                International shipping?
-                            </button>
-                            <button onClick={() => handleSuggestion("What are your support hours?")}>
-                                Support hours?
-                            </button>
+                            {SUGGESTIONS.map((suggestion, index) => (
+                                <button key={index} onClick={() => handleSuggestion(suggestion.text)}>
+                                    {suggestion.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 )}
@@ -157,7 +154,7 @@ export const ChatWidget: React.FC = () => {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Type your message..."
+                    placeholder={UI_TEXT.PLACEHOLDER_INPUT}
                     disabled={isLoading}
                     maxLength={2000}
                 />
@@ -166,7 +163,7 @@ export const ChatWidget: React.FC = () => {
                     disabled={!inputValue.trim() || isLoading}
                     className="send-btn"
                 >
-                    {isLoading ? '...' : 'Send'}
+                    {isLoading ? UI_TEXT.SENDING_BUTTON : UI_TEXT.SEND_BUTTON}
                 </button>
             </div>
         </div>

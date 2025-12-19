@@ -1,16 +1,17 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Message } from '../../types';
 import { ILLMProvider } from './types';
+import { GEMMA_MODEL, PROVIDERS } from '../../constants';
 import { AppError } from '../../middleware/errorHandler';
 
 export class GemmaProvider implements ILLMProvider {
-    public name = 'gemma';
+    public name = PROVIDERS.GEMMA;
     private client: GoogleGenerativeAI;
     private model: any;
 
     constructor(apiKey: string) {
         this.client = new GoogleGenerativeAI(apiKey);
-        this.model = this.client.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        this.model = this.client.getGenerativeModel({ model: GEMMA_MODEL });
     }
 
     async generateReply(messages: Message[], userMessage: string, systemPrompt: string): Promise<string> {
@@ -21,7 +22,7 @@ export class GemmaProvider implements ILLMProvider {
                 history: [
                     {
                         role: 'user',
-                        parts: [{ text: `System Instruction: ${systemPrompt}` }],
+                        parts: [{ text: `System Instruction: ${systemPrompt} ` }],
                     },
                     {
                         role: 'model',
