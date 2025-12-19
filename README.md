@@ -62,16 +62,27 @@ LLM_PROVIDER=openai
 OPENAI_API_KEY=your_openai_key
 ```
 
-## 4. How to Start Server
+## 4. How to Deploy (Ranked by Speed)
 
-**Backend**
-```bash
-cd backend
-npm install
-# Database is auto-configured (SQLite)
-npm run db:migrate  # Initialize chat.db
-npm run dev         # Start server on http://localhost:3000
-```
+### Option A: Render.com (Fastest & Free)
+1.  Push this code to GitHub.
+2.  Create a **New Web Service** on Render.
+3.  Connect your repo.
+4.  **Settings**:
+    -   **Build Command**: `npm run build`
+    -   **Start Command**: `npm start`
+    -   **Environment Variables**: Add `GEMMA_API_KEY` (or your chosen provider's key).
+5.  Deploy! Use the Render URL.
+
+### Option B: Local
+1.  Start backend:
+    ```bash
+    cd backend
+    npm install
+    npm run db:migrate
+    npm run dev
+    ```
+2.  Open `http://localhost:3000`
 
 **Frontend**
 ```bash
